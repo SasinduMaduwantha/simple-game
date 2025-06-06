@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Puzzle</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(145deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .puzzle-container {
+            display: inline-block;
+            border: 4px solid #333;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            grid-template-rows: repeat(3, 150px);
+            gap: 2px;
+            background: #333;
+        }
+
+        .puzzle-piece {
+            width: 150px;
+            height: 150px;
+            background-size: 450px 450px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .puzzle-piece:hover {
+            border-color: #4facfe;
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .puzzle-piece.empty {
+            background: #f0f0f0;
+            cursor: default;
+        }
+
+        .puzzle-piece.empty:hover {
+            border-color: transparent;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .puzzle-piece.next-move {
+            border: 4px solid #ff6b6b !important;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.8) !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .hint-message {
+            background: rgba(255, 235, 59, 0.9);
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            border: 2px solid #ffc107;
+            display: none;
+        }
+
+        .reference-image {
+            max-width: 200px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            margin: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .win-message {
+            font-size: 2em;
+            color: #4facfe;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-10px); }
+        }
+
+        .moves-counter {
+            font-size: 1.2em;
+            color: #333;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .file-input-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #4facfe;
+            border-radius: 15px;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .file-input {
+            margin: 10px 0;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 2px solid #4facfe;
+            border-radius: 10px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div style="display: flex;align-items: center; gap: 50px; margin-left: 30px;">
+        
+            <h1>My Puzzle</h1>
+              <img src="src/puzzle.png" alt="Puzzle Icon" width="35" height="35" >
+        </div>
+
+
+        <div class="file-input-container">
+            <p>Upload your image:</p>
+            <input type="file" id="imageInput" accept="image/*" class="file-input">
+            <p style="font-size: 0.9em; color: #666;">Or use the default placeholder image below</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="shufflePuzzle()">🔀 Shuffle</button>
+            <button onclick="resetPuzzle()">🔄 Reset</button>
+            <button onclick="getNextHint()">💡 Get Hint</button>
+        </div>
+
+        <div class="moves-counter">Moves: <span id="moveCount">0</span></div>
+
+        <div id="hintMessage" class="hint-message"></div>
+
+        <div class="puzzle-container">
+            <div class="puzzle-grid" id="puzzleGrid"></div>
+        </div>
+
+        <div id="winMessage" class="win-message" style="display: none;">
+            🎉 Congratulations! You solved the puzzle! 🎉
+        </div>
+
+        <div>
+            <p>Reference Image:</p>
+            <img id="referenceImage" class="reference-image" alt="Reference image">
+        </div>
+    </div>
+
+    <script>
+        let puzzleState = [1, 2, 3, 4, 5, 6, 7, 8, 0]; // 0 represents empty space
+        let solvedState = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        let moves = 0;
+        let currentImage = null;
+        let currentHintIndex = -1;
+
+        // Create a default placeholder image
+        function createDefaultImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 450;
+            canvas.height = 450;
+            const ctx = canvas.getContext('2d');
+            
+            // Create a colorful dog-themed placeholder
+            const gradient = ctx.createLinearGradient(0, 0, 450, 450);
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(0.5, '#4ecdc4');
+            gradient.addColorStop(1, '#45b7d1');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 450, 450);
+            
+            // Add some decorative elements
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for(let i = 0; i < 20; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random() * 450, Math.random() * 450, Math.random() * 30 + 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Add text
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 40px Arial';
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeText('My PUZZLE', 225, 200);
+            ctx.fillText('My PUZZLE', 225, 200);
+            
+            ctx.font = 'bold 24px Arial';
+            ctx.strokeText('Upload your image above!', 225, 280);
+            ctx.fillText('Upload your image above!', 225, 280);
+            
+            return canvas.toDataURL();
+        }
+
+        function initializePuzzle() {
+            currentImage = createDefaultImage();
+            document.getElementById('referenceImage').src = currentImage;
+            renderPuzzle();
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Create a canvas to resize the image to 450x450
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 450;
+                        canvas.height = 450;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, 450, 450);
+                        currentImage = canvas.toDataURL();
+                        document.getElementById('referenceImage').src = currentImage;
+                        resetPuzzle();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function renderPuzzle() {
+            const grid = document.getElementById('puzzleGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < 9; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.onclick = () => movePiece(i);
+
+                // Highlight the piece that should be moved next
+                if (i === currentHintIndex) {
+                    piece.classList.add('next-move');
+                }
+
+                const value = puzzleState[i];
+                if (value === 0) {
+                    piece.classList.add('empty');
+                } else {
+                    const row = Math.floor((value - 1) / 3);
+                    const col = (value - 1) % 3;
+                    piece.style.backgroundImage = `url(${currentImage})`;
+                    piece.style.backgroundPosition = `-${col * 150}px -${row * 150}px`;
+                }
+
+                grid.appendChild(piece);
+            }
+        }
+
+        function movePiece(index) {
+            const emptyIndex = puzzleState.indexOf(0);
+            const validMoves = getValidMoves(emptyIndex);
+
+            if (validMoves.includes(index)) {
+                // Swap the piece with empty space
+                [puzzleState[index], puzzleState[emptyIndex]] = [puzzleState[emptyIndex], puzzleState[index]];
+                moves++;
+                document.getElementById('moveCount').textContent = moves;
+                clearHint();
+                renderPuzzle();
+                checkWin();
+            }
+        }
+
+        function getValidMoves(emptyIndex) {
+            const row = Math.floor(emptyIndex / 3);
+            const col = emptyIndex % 3;
+            const validMoves = [];
+
+            // Up
+            if (row > 0) validMoves.push(emptyIndex - 3);
+            // Down
+            if (row < 2) validMoves.push(emptyIndex + 3);
+            // Left
+            if (col > 0) validMoves.push(emptyIndex - 1);
+            // Right
+            if (col < 2) validMoves.push(emptyIndex + 1);
+
+            return validMoves;
+        }
+
+        function checkWin() {
+            if (JSON.stringify(puzzleState) === JSON.stringify(solvedState)) {
+                document.getElementById('winMessage').style.display = 'block';
+                setTimeout(() => {
+                    alert(`🎉 Congratulations! You solved the puzzle in ${moves} moves! 🎉`);
+                }, 500);
+            } else {
+                document.getElementById('winMessage').style.display = 'none';
+            }
+        }
+
+        function shufflePuzzle() {
+            // Start from solved state and make random valid moves to ensure solvability
+            puzzleState = [...solvedState];
+            
+            for (let i = 0; i < 1000; i++) {
+                const emptyIndex = puzzleState.indexOf(0);
+                const validMoves = getValidMoves(emptyIndex);
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                [puzzleState[emptyIndex], puzzleState[randomMove]] = [puzzleState[randomMove], puzzleState[emptyIndex]];
+            }
+            
+            moves = 0;
+            document.getElementById('moveCount').textContent = moves;
+            document.getElementById('winMessage').style.display = 'none';
+            clearHint();
+            renderPuzzle();
+        }
+
+        function resetPuzzle() {
+            puzzleState = [...solvedState];
+            moves = 0;
+            document.getElementById('moveCount').textContent = moves;
+            document.getElementById('winMessage').style.display = 'none';
+            clearHint();
+            renderPuzzle();
+        }
+
+        function getNextHint() {
+            if (JSON.stringify(puzzleState) === JSON.stringify(solvedState)) {
+                showHintMessage("🎉 Puzzle is already solved!");
+                return;
+            }
+
+            const solution = solvePuzzle();
+            if (solution && solution.length > 0) {
+                const nextMove = solution[0];
+                currentHintIndex = nextMove;
+                const pieceNumber = puzzleState[nextMove];
+                showHintMessage(`💡 Click on piece ${pieceNumber} (highlighted in red) to move it!`);
+                renderPuzzle();
+            } else {
+                showHintMessage("🤔 Unable to find next move. Try shuffling the puzzle!");
+            }
+        }
+
+        function clearHint() {
+            currentHintIndex = -1;
+            document.getElementById('hintMessage').style.display = 'none';
+        }
+
+        function showHintMessage(message) {
+            const hintDiv = document.getElementById('hintMessage');
+            hintDiv.textContent = message;
+            hintDiv.style.display = 'block';
+            
+            // Auto-hide hint message after 5 seconds
+            setTimeout(() => {
+                if (hintDiv.textContent === message) {
+                    hintDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // Simple A* solver to find the next best move
+        function solvePuzzle() {
+            const target = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+            const queue = [{state: [...puzzleState], path: []}];
+            const visited = new Set();
+            visited.add(puzzleState.join(','));
+
+            while (queue.length > 0) {
+                const {state, path} = queue.shift();
+                
+                if (state.join(',') === target.join(',')) {
+                    return path;
+                }
+
+                if (path.length > 20) continue; // Limit search depth
+
+                const emptyIndex = state.indexOf(0);
+                const validMoves = getValidMoves(emptyIndex);
+
+                for (const move of validMoves) {
+                    const newState = [...state];
+                    [newState[emptyIndex], newState[move]] = [newState[move], newState[emptyIndex]];
+                    const stateStr = newState.join(',');
+
+                    if (!visited.has(stateStr)) {
+                        visited.add(stateStr);
+                        queue.push({state: newState, path: [...path, move]});
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+            initializePuzzle();
+            shufflePuzzle(); // Start with a shuffled puzzle
+        });
+    </script>
+</body>
+</html>
